@@ -5,18 +5,6 @@ date: "Saturday, March 21, 2015"
 output: ioslides_presentation
 ---
 
-## R Markdown
-
-This is an R Markdown presentation. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
-
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document.
-
-## Slide with Bullets
-
-- Bullet 1
-- Bullet 2
-- Bullet 3
-
 ```{r, echo=FALSE, cache=TRUE, message=FALSE, warning=FALSE}
 library(XML)
 extract.webpage = function(link, tag.path){
@@ -97,4 +85,62 @@ require(ggplot2)
 g = ggplot( data = donation.progress, aes( date, amount ))
 g + geom_point()
 ```
+
+## Donation Behavior in 2008
+
+```{r, echo=FALSE, cache=TRUE, message=FALSE, warning=FALSE}
+#run get.donation.count() @donationSN.R
+donor.count = read.csv("donor_count.csv", header = T, stringsAsFactors = F)
+
+
+gen.event.matrix = function(start.proj, end.proj, filepath){
+    #order aid by published date
+    dt.published.ordered = donationData[with(donationData, order(dt.published)), c("aid", "dt.published")]
+    
+    #get the start date of the donation event
+    donation.details = read.csv(paste(filepath, dt.published.ordered[start.proj,"aid"], ".csv", sep=""), header = T, stringsAsFactors = F)
+    donation.details$Date = as.Date(donation.details$Date)
+    start.date = min(donation.details$Date)
+    
+    #get the end date of donation event
+    donation.details = read.csv(paste(filepath, dt.published.ordered[end.proj,"aid"], ".csv", sep=""), header = T, stringsAsFactors = F)
+    donation.details$Date = as.Date(donation.details$Date)
+    end.date = max(donation.details$Date)
+    
+    # for event matrix data structurej
+    event.matrix = matrix(data = 0, ncol = as.integer(end.date - start.date)+1 , nrow = nrow(donor.count))
+    row.names(event.matrix) = donor.count$Name
+    colnames(event.matrix) = as.character(seq(from = start.date, to = end.date, by="day"))
+    
+    for(k in start.proj:end.proj){
+        #print(dt.published.ordered[k,"aid"])
+        donation.details = read.csv(paste(filepath, dt.published.ordered[k,"aid"], ".csv", sep=""), header = T, stringsAsFactors = F)
+        donation.details$Date = strftime(donation.details$Date, "%Y-%m-%d")
+        
+        for(i in 1:nrow(donation.details)){
+            donor.names = unlist(strsplit(donation.details[i, "Name"], "、"))
+            
+            for(j in seq(donor.names)){
+                event.matrix[donor.names[j], donation.details[i,"Date"]] = event.matrix[donor.names[j], donation.details[i,"Date"]] + 1
+            }
+        }
+    }
+    
+    event.matrix   
+}
+
+#generate donation event matrix in 2008
+event.matrix.2008 = gen.event.matrix(start.proj = 1, end.proj = 288, filepath = "./donation_details/")
+donor.count.2008 = apply(event.matrix.2008, 1, sum)
+month.active.donor = names(donor.count.2008[donor.count.2008  == 12])
+```
+
+- There are 246 people who made donation exactly 12 times
+- Donation behavior of `r month.active.donor[123]` as example
+
+```{r, echo=FALSE}
+plot(event.matrix.2008[month.active.donor[123],] ~ as.Date(colnames(event.matrix.2008)), type = "l")
+```
+
+
 
