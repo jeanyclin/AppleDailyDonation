@@ -14,3 +14,5 @@ Group_meeting_files/
 donation_amount.csv
 *.html
 donation_progress.csv
+*.RData
+*.Rhistory
