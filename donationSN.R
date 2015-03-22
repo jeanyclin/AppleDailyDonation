@@ -12,29 +12,34 @@ extract.webpage = function(link, tag.path){
     tag.values
 }
 
-# get all donation amount
-donation.amount = data.frame(matrix(ncol = 3, nrow = 10))
-colnames(donation.amount) = c("projectID", "date", "amount")
-index = 1
-for(i in 1:173){
-    link = paste("http://search.appledaily.com.tw/charity/projlist/Page/", i, sep = "")
-    tag.path = "//td"
-    
-    #get the web page content
-    tag.values = extract.webpage(link, tag.path)
-    
-    #get the project ID and donation amount
-    for(j in seq(from = 2, to = length(tag.values), by = 6)){
-        if(tag.values[j+3] == "已結案"){
-            donation.amount[index, "projectID"] = tag.values[j]
-            donation.amount[index, "date"] = tag.values[j+2]
-            donation.amount[index, "amount"] = as.integer(tag.values[j+4])
-            index = index + 1 
+# get all donation ID, date and amount
+get.donation.progress = function(){
+    donation.progress = data.frame(matrix(ncol = 3, nrow = 10))
+    colnames(donation.progress) = c("projectID", "date", "amount")
+    index = 1
+    for(i in 1:173){
+        link = paste("http://search.appledaily.com.tw/charity/projlist/Page/", i, sep = "")
+        tag.path = "//td"
+        
+        #get the web page content
+        tag.values = extract.webpage(link, tag.path)
+        
+        #get the project ID and donation amount
+        for(j in seq(from = 2, to = length(tag.values), by = 6)){
+            if(tag.values[j+3] == "已結案"){
+                donation.progress[index, "projectID"] = tag.values[j]
+                donation.progress[index, "date"] = tag.values[j+2]
+                donation.progress[index, "amount"] = as.integer(tag.values[j+4])
+                index = index + 1 
+            }
         }
+        
     }
+    write.csv(donation.progress, "donation_progress.csv", row.names = F)
     
+    donation.progress
 }
-write.csv(donation.amount, "donation_amount.csv", row.names = F)
+
 
 #get the donation details of each project
 for(i in 1:nrow(donationData)){
