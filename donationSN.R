@@ -13,8 +13,8 @@ extract.webpage = function(link, tag.path){
 }
 
 # get all donation amount
-donation.amount = data.frame(matrix(ncol = 2, nrow = 10))
-colnames(donation.amount) = c("projectID", "amount")
+donation.amount = data.frame(matrix(ncol = 3, nrow = 10))
+colnames(donation.amount) = c("projectID", "date", "amount")
 index = 1
 for(i in 1:173){
     link = paste("http://search.appledaily.com.tw/charity/projlist/Page/", i, sep = "")
@@ -27,6 +27,7 @@ for(i in 1:173){
     for(j in seq(from = 2, to = length(tag.values), by = 6)){
         if(tag.values[j+3] == "已結案"){
             donation.amount[index, "projectID"] = tag.values[j]
+            donation.amount[index, "date"] = tag.values[j+2]
             donation.amount[index, "amount"] = as.integer(tag.values[j+4])
             index = index + 1 
         }
