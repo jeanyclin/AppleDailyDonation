@@ -1,0 +1,77 @@
+---
+title: "Data Analysis of Apple Daily"
+author: "Jean Lin"
+date: "Saturday, March 21, 2015"
+output: ioslides_presentation
+---
+
+## R Markdown
+
+This is an R Markdown presentation. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document.
+
+## Slide with Bullets
+
+- Bullet 1
+- Bullet 2
+- Bullet 3
+
+## Get all the donation amount
+
+```{r, cache=TRUE}
+library(XML)
+
+donation.amount = data.frame(matrix(ncol = 2, nrow = 10))
+colnames(donation.amount) = c("projectID", "amount")
+index = 1
+for(i in 2:173){
+    link = paste("http://search.appledaily.com.tw/charity/projlist/Page/", i, sep = "")
+    tag.path = "//td"
+    
+    #get the web page content
+    tag.values = extract.webpage(link, tag.path)
+    
+    #get the project ID and donation amount
+    for(j in seq(from = 2, to = length(tag.values), by = 6)){
+        donation.amount[index, "projectID"] = tag.values[j]
+        donation.amount[index, "amount"] = as.integer(tag.values[j+4])
+        index = index + 1
+    }
+    
+}
+write.csv(donation.amount, "donation_amount.csv", row.names = F)
+```
+
+
+## Brief View of All Donation Amount
+
+```{r, echo=FALSE}
+boxplot(donation.amount$amount, horizontal = TRUE)
+```
+
+## Eliminating the Special Event
+
+- `r donation.amount[3024, "projectID"]`
+- `r donation.amount[2870, "projectID"]`
+- `r donation.amount[2869, "projectID"]`
+
+```{r, echo=FALSE}
+donation.amount = donation.amount[-c(3024, 2870, 2869),]
+boxplot(donation.amount$amount, horizontal = TRUE)
+```
+
+## Donation Amount Statistics
+
+- Mean: `r sprintf("%.2f", mean(donation.amount$amount))`
+- Median: `r sprintf("%.2f", median(donation.amount$amount))`
+- Min.: `r sprintf("%.2f", min(donation.amount$amount))`
+- Max.: `r sprintf("%.2f", max(donation.amount$amount))`
+- SD.: `r sprintf("%.2f", sd(donation.amount$amount))`
+
+## Donation Amount Distribution
+
+```{r, echo=FALSE}
+hist(donation.amount$amount, breaks = 50)
+```
+
