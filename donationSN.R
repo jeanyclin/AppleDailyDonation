@@ -64,11 +64,14 @@ for(i in 1:nrow(donationData)){
 #========== get the donation count for each person ==========#
 donor.count = data.frame(matrix(ncol = 2, nrow = 0))
 colnames(donor.count) = c("Name", "Count")
-filepath = "C:/Users/Jean/Documents/donation_details/"
+filepath = "./donation_details/"
 
-for(k in 1:10){
-    print(donationData[k,"aid"])
-    donation.details = read.csv(paste(filepath, donationData[k,"aid"], ".csv", sep=""), header = T, stringsAsFactors = F)
+#order aid by published date
+dt.published.ordered = donationData[with(donationData, order(dt.published)), c("aid", "dt.published")]
+
+for(k in 1:288){
+    print(dt.published.ordered[k,"aid"])
+    donation.details = read.csv(paste(filepath, dt.published.ordered[k,"aid"], ".csv", sep=""), header = T, stringsAsFactors = F)
     
     for(i in 1:nrow(donation.details)){
         donor.names = unlist(strsplit(donation.details[i, "Name"], "、"))

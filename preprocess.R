@@ -94,7 +94,7 @@ donationData = read.csv(dataPath, fileEncoding = "UTF-8", stringsAsFactors = FAL
 donationData = NumericToFactor(donationData)
 
 #identify date variables
-donationData$dt.published = as.Date(donationData$dt.published)
+donationData$dt.published = as.Date(donationData$dt.published, "%Y-%m-%d")
 donationData$dt.funded = as.Date(donationData$dt.funded)
 donationData$dt.published.monthday = as.factor(donationData$dt.published.monthday)
 donationData$dt.published.month = factor(donationData$dt.published.month, levels = c("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"))
@@ -103,6 +103,7 @@ donationData$rank = as.factor(donationData$rank)
 donationData$journalist = as.factor(donationData$journalist)
 donationData$dep = as.factor(donationData$dep)
 donationData = cbind(donationData,dt.deltaPublishedFunded = as.numeric(donationData$dt.funded-donationData$dt.published))
+
 
 #log(donation)
 log.donation = log(donationData$donation, base=exp(1))
