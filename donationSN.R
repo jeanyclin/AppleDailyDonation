@@ -3,6 +3,7 @@ library(XML)
 #========== extract data from webpage ==========#
 trim <- function (x) gsub("^\\s+|\\s+$", "", x)
 
+library(XML)
 extract.webpage = function(link, tag.path){
     webpage = readLines(url(link))
     htmlpage = htmlParse(webpage, asText = TRUE)
@@ -11,10 +12,30 @@ extract.webpage = function(link, tag.path){
     tag.values
 }
 
-donation.amount = donation.amount[-3024]
+# get all donation amount
+donation.amount = data.frame(matrix(ncol = 2, nrow = 10))
+colnames(donation.amount) = c("projectID", "amount")
+index = 1
+for(i in 1:173){
+    link = paste("http://search.appledaily.com.tw/charity/projlist/Page/", i, sep = "")
+    tag.path = "//td"
+    
+    #get the web page content
+    tag.values = extract.webpage(link, tag.path)
+    
+    #get the project ID and donation amount
+    for(j in seq(from = 2, to = length(tag.values), by = 6)){
+        if(tag.values[j+3] == "已結案"){
+            donation.amount[index, "projectID"] = tag.values[j]
+            donation.amount[index, "amount"] = as.integer(tag.values[j+4])
+            index = index + 1 
+        }
+    }
+    
+}
+write.csv(donation.amount, "donation_amount.csv", row.names = F)
 
-
-
+#get the donation details of each project
 for(i in 1:nrow(donationData)){
     
     webpage = readLines(paste("http://search.appledaily.com.tw/charity/projdetail/proj/", donationData[i,"aid"], sep=""))
