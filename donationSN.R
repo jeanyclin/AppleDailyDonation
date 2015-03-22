@@ -93,42 +93,48 @@ get.donation.count = function(num.projects){
         }
     }
     
+    write.csv(donor.count, "donor_count.csv", row.names = F)
+    
+}
+
+
+gen.event.matrix = function(start.proj, end.proj, filepath){
+    #order aid by published date
+    dt.published.ordered = donationData[with(donationData, order(dt.published)), c("aid", "dt.published")]
+    
+    #get the start date of the donation event
+    donation.details = read.csv(paste(filepath, dt.published.ordered[start.proj,"aid"], ".csv", sep=""), header = T, stringsAsFactors = F)
+    donation.details$Date = as.Date(donation.details$Date)
+    start.date = min(donation.details$Date)
+    
+    #get the end date of donation event
+    donation.details = read.csv(paste(filepath, dt.published.ordered[end.proj,"aid"], ".csv", sep=""), header = T, stringsAsFactors = F)
+    donation.details$Date = as.Date(donation.details$Date)
+    end.date = max(donation.details$Date)
+    
+    # for event matrix data structurej
+    event.matrix = matrix(data = 0, ncol = as.integer(end.date - start.date)+1 , nrow = nrow(donor.count))
+    row.names(event.matrix) = donor.count$Name
+    colnames(event.matrix) = as.character(seq(from = start.date, to = end.date, by="day"))
+    
+    for(k in start.proj:end.proj){
+        print(dt.published.ordered[k,"aid"])
+        donation.details = read.csv(paste(filepath, dt.published.ordered[k,"aid"], ".csv", sep=""), header = T, stringsAsFactors = F)
+        donation.details$Date = strftime(donation.details$Date, "%Y-%m-%d")
+        
+        for(i in 1:nrow(donation.details)){
+            donor.names = unlist(strsplit(donation.details[i, "Name"], "、"))
+            
+            for(j in seq(donor.names)){
+                event.matrix[donor.names[j], donation.details[i,"Date"]] = event.matrix[donor.names[j], donation.details[i,"Date"]] + 1
+            }
+        }
+    }
+    
+    event.matrix   
 }
 
 #generate donation event matrix in 2008
+event.matrix.2008 = gen.event.matrix(start.proj = 1, end.proj = 288, filepath = "./donation_details/")
 
-start.proj = 1
-end.proj = 288
-filepath = "./donation_details/"
 
-#order aid by published date
-dt.published.ordered = donationData[with(donationData, order(dt.published)), c("aid", "dt.published")]
-
-#get the start date of the donation event
-donation.details = read.csv(paste(filepath, dt.published.ordered[start.proj,"aid"], ".csv", sep=""), header = T, stringsAsFactors = F)
-donation.details$Date = as.Date(donation.details$Date)
-start.date = min(donation.details$Date)
-
-#get the end date of donation event
-donation.details = read.csv(paste(filepath, dt.published.ordered[end.proj,"aid"], ".csv", sep=""), header = T, stringsAsFactors = F)
-donation.details$Date = as.Date(donation.details$Date)
-end.date = max(donation.details$Date)
-
-# for event matrix data structurej
-event.matrix = matrix(data = 0, ncol = as.integer(end.date - start.date)+1 , nrow = nrow(donor.count))
-row.names(event.matrix) = donor.count$Name
-colnames(event.matrix) = as.character(seq(from = start.date, to = end.date, by="day"))
-
-for(k in start.proj:end.proj){
-    print(dt.published.ordered[k,"aid"])
-    donation.details = read.csv(paste(filepath, dt.published.ordered[k,"aid"], ".csv", sep=""), header = T, stringsAsFactors = F)
-    donation.details$Date = strftime(donation.details$Date, "%Y-%m-%d")
-    
-    for(i in 1:nrow(donation.details)){
-        donor.names = unlist(strsplit(donation.details[i, "Name"], "、"))
-        
-        for(j in seq(donor.names)){
-            event.matrix[donor.names[j], donation.details[i,"Date"]] = event.matrix[donor.names[j], donation.details[i,"Date"]] + 1
-        }
-    }
-}
