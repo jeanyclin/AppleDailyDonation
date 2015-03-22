@@ -17,15 +17,20 @@ When you click the **Knit** button a document will be generated that includes bo
 - Bullet 2
 - Bullet 3
 
-## Get all the donation amount
-
-```{r, cache=TRUE}
+```{r, echo=FALSE, cache=TRUE, message=FALSE, warning=FALSE}
 library(XML)
-
+extract.webpage = function(link, tag.path){
+    webpage = readLines(url(link))
+    htmlpage = htmlParse(webpage, asText = TRUE)
+    tag.values = xpathSApply(htmlpage, tag.path, xmlValue)
+    
+    tag.values
+}
+# get all donation amount
 donation.amount = data.frame(matrix(ncol = 2, nrow = 10))
 colnames(donation.amount) = c("projectID", "amount")
 index = 1
-for(i in 2:173){
+for(i in 1:173){
     link = paste("http://search.appledaily.com.tw/charity/projlist/Page/", i, sep = "")
     tag.path = "//td"
     
@@ -34,9 +39,11 @@ for(i in 2:173){
     
     #get the project ID and donation amount
     for(j in seq(from = 2, to = length(tag.values), by = 6)){
-        donation.amount[index, "projectID"] = tag.values[j]
-        donation.amount[index, "amount"] = as.integer(tag.values[j+4])
-        index = index + 1
+        if(tag.values[j+3] == "已結案"){
+            donation.amount[index, "projectID"] = tag.values[j]
+            donation.amount[index, "amount"] = as.integer(tag.values[j+4])
+            index = index + 1 
+        }
     }
     
 }
@@ -52,12 +59,11 @@ boxplot(donation.amount$amount, horizontal = TRUE)
 
 ## Eliminating the Special Event
 
-- `r donation.amount[3024, "projectID"]`
 - `r donation.amount[2870, "projectID"]`
 - `r donation.amount[2869, "projectID"]`
 
 ```{r, echo=FALSE}
-donation.amount = donation.amount[-c(3024, 2870, 2869),]
+donation.amount = donation.amount[-c(2870, 2869),]
 boxplot(donation.amount$amount, horizontal = TRUE)
 ```
 
