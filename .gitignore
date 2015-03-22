@@ -1,5 +1,8 @@
 *.Rproj
 *.Rproj.user
+donation_details/
+Group_meeting_cache/
+Group_meeting_files/
 .Rproj.user/2E31C0E5/sdb/s-AE7C831/lock_file
 .Rproj.user/2E31C0E5/sdb/prop/51EC6326
 .Rproj.user/2E31C0E5/sdb/prop/6962822E
@@ -8,3 +11,5 @@
 .Rproj.user/2E31C0E5/sdb/prop/AEE22C09
 .Rproj.user/2E31C0E5/sdb/s-AE7C831/2AAED10A
 .Rproj.user/2E31C0E5/sdb/prop/INDEX
+donation_amount.csv
+*.html
