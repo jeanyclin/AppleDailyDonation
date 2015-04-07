@@ -5,18 +5,36 @@ date: "Tuesday, April 07, 2015"
 output: html_document
 ---
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
-
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
-
-```{r}
-summary(cars)
+# Donation Amount Trend of Random Projects
+```{r, echo=FALSE}
+proj.indices = sample(1:1581, 10, replace = FALSE)
 ```
 
-You can also embed plots, for example:
+
+The following figures show the trend of `r proj.indices` 
 
 ```{r, echo=FALSE}
-plot(cars)
+library(ggplot2)
+get.project.trend = function(proj.index, filepath){
+    #order aid by published date
+    dt.published.ordered = donationData[with(donationData, order(dt.published)), c("aid", "dt.published")]
+    
+    #get the start date of the donation event
+    donation.details = read.csv(paste(filepath, dt.published.ordered[proj.index,"aid"], ".csv", sep=""), header = T, stringsAsFactors = F)
+    
+    donation.amount.daily = tapply(donation.details$Amount, donation.details$Date, sum)
+    trend = data.frame(date = names(donation.amount.daily), total = donation.amount.daily)
+    trend$date = as.Date(trend$date, "%Y/%m/%d")
+    trend = trend[with(trend, order(date, decreasing = F)), ]
+    trend
+}
+
+for(i in seq(proj.indices)){
+    trend = get.project.trend(proj.indices[i], "./donation_details/")
+    print(sum(trend$total))
+    require(ggplot2)
+    g = ggplot( data = trend, aes( date, total ))
+    print(g + geom_point() +geom_line())
+}
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
