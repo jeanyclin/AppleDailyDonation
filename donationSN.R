@@ -41,7 +41,7 @@ get.donation.progress = function(){
 }
 
 
-#get the donation details of each project
+#get the donation details of each project from the websites
 for(i in 1:nrow(donationData)){
     
     webpage = readLines(paste("http://search.appledaily.com.tw/charity/projdetail/proj/", donationData[i,"aid"], sep=""))
@@ -137,4 +137,30 @@ gen.event.matrix = function(start.proj, end.proj, filepath){
 #generate donation event matrix in 2008
 event.matrix.2008 = gen.event.matrix(start.proj = 1, end.proj = 288, filepath = "./donation_details/")
 
+# donation trend of each project
+get.project.trend = function(proj.index, filepath){
+    #order aid by published date
+    dt.published.ordered = donationData[with(donationData, order(dt.published)), c("aid", "dt.published")]
+    
+    #get the start date of the donation event
+    donation.details = read.csv(paste(filepath, dt.published.ordered[proj.index,"aid"], ".csv", sep=""), header = T, stringsAsFactors = F)
+    
+    donation.amount.daily = tapply(donation.details$Amount, donation.details$Date, sum)
+    trend = data.frame(date = names(donation.amount.daily), total = donation.amount.daily)
+    trend$date = as.Date(trend$date, "%Y/%m/%d")
+    trend = trend[with(trend, order(date, decreasing = F)), ]
+    trend
+}
+
+# get donation trend of random projects
+proj.indices = sample(1:1581, 3, replace = FALSE)
+
+for(i in seq(proj.indices)){
+    trend = get.project.trend(proj.indices[i], "./donation_details/")
+    print(sum(trend$total))
+    require(ggplot2)
+    g = ggplot( data = trend, aes( date, total ))
+    print(g + geom_point() +geom_line())
+}
+    
 
