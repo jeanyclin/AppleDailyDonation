@@ -1,13 +1,20 @@
 library(XML)
 library(RCurl)
 
-data <- list()
+donation.data = read.csv("./df_adjusted.csv", stringsAsFactors = FALSE)
 
-for( i in 1:nrow(donationData)){
-    tmp <- paste(i, '.html', sep='')
-    url <- paste('www.ptt.cc/bbs/StupidClown/index', tmp, sep='')
+# extract the article on the web
+
+for( i in 1:nrow(donation.data)){
+    print(i)
+    url <- donation.data$url.article[i]
     html <- htmlParse(getURL(url))
-    url.list <- xpathSApply(html, "//div[@class='title']/a[@href]", xmlAttrs)
-    data <- rbind(data, paste('www.ptt.cc', url.list, sep=''))
+    url.list.intro <- xpathSApply(html, "//p[@id='introid']", xmlValue)
+    url.list.content <- xpathSApply(html, "//p[@id='bcontent']", xmlValue)
+    intro = paste(unlist(url.list.intro), collapse=" ") 
+    content = paste(unlist(url.list.content), collapse=" ") 
+    article = paste(intro, content, sep=" ")
+    write(article, paste("./donation_articles/", donation.data$aid[i], ".txt", sep=""))
 }
-data <- unlist(data)
+
+
