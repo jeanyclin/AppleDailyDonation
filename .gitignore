@@ -1,6 +1,7 @@
 *.Rproj
 *.Rproj.user
 donation_details/
+donation_articles/
 Group_meeting_cache/
 Group_meeting_files/
 .Rproj.user/2E31C0E5/sdb/s-AE7C831/lock_file
