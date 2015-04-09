@@ -162,5 +162,34 @@ for(i in seq(proj.indices)){
     g = ggplot( data = trend, aes( date, total ))
     print(g + geom_point() +geom_line())
 }
-    
 
+#the distribution of donation amount
+library(ggplot2)
+
+donation.amount.count= data.frame(matrix(ncol = 2, nrow = 0))
+colnames(donation.amount.count) = c("amount", "count")
+
+donation.count= data.frame(matrix(ncol = 2, nrow = 0))
+colnames(donation.count) = c("aid", "count")
+for( i in 1:nrow(donation.data)){
+    print(i)
+    donation.detail = read.csv(paste("./donation_details/", donation.data$aid[i], ".csv", sep = ""))
+    
+    new.count = data.frame(aid = donation.data$aid[i], count = nrow(donation.detail))
+    donation.count = rbind(donation.count, new.count)
+    
+    for(j in 1:nrow(donation.detail)){
+        if(donation.detail$Amount[j] %in% donation.amount.count$amount){
+            index = match(donation.detail$Amount[j], donation.amount.count$amount)
+            donation.amount.count$count[index] = donation.amount.count$count[index] + 1
+        }else{
+            new.amount = data.frame(count = 1, amount = donation.detail$Amount[j])
+            donation.amount.count = rbind(donation.amount.count, new.amount)
+        }
+    }
+}
+
+g = ggplot( data = donation.amount.count, aes( amount, count ))
+print(g + geom_point())
+
+hist(donation.count$count, breaks = 50)
