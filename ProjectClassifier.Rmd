@@ -15,6 +15,7 @@ The following figures show the trend of `r proj.indices`
 
 ```{r, echo=FALSE}
 library(ggplot2)
+
 get.project.trend = function(proj.index, filepath){
     #order aid by published date
     dt.published.ordered = donationData[with(donationData, order(dt.published)), c("aid", "dt.published")]
@@ -28,6 +29,8 @@ get.project.trend = function(proj.index, filepath){
     trend = trend[with(trend, order(date, decreasing = F)), ]
     trend
 }
+
+donationData = read.csv("df_adjusted.csv", fileEncoding = "UTF-8", stringsAsFactors = FALSE)
 
 for(i in seq(proj.indices)){
     trend = get.project.trend(proj.indices[i], "./donation_details/")
